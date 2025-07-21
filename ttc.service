@@ -1,0 +1,13 @@
+[Unit]
+Description=Tibber Tarrif Check via EVCC
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/ttc
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=ttc.service

@@ -1,0 +1,21 @@
+# Global Settings
+[global]
+debug = true
+interval = 300
+
+# EVCC Settings
+[evcc]
+host = "evcc-01:7070"
+batteryLimit = 75
+    [evcc.morning]
+    start = 0
+    end = 6
+    [evcc.afternoon]
+    start = 10
+    end = 18
+
+
+[homeassistant]
+host = "hassi-01:8123"
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxYmYwZmNlYzBiZmE0ZWIwOGZiMDk3YTMyOTU4MzJjNCIsImlhdCI6MTc0NDk2NjM5NywiZXhwIjoyMDYwMzI2Mzk3fQ.Jd_7flOWXpTfKPV0CSGs7fdkJgdagBmjdlp9FrhV9xg"
+text_entityid = "input_text.evcc_lowest_price"
