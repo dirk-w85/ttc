@@ -11,6 +11,10 @@ import (
 	"bytes"
 )
 
+const baseVersion = "v0.1."
+var curVersion string
+var curBuild string
+
 //---------------- STRUCTS -----------------
 type LOWESTPrice struct {
 	Price 	float64
@@ -19,17 +23,15 @@ type LOWESTPrice struct {
 	CurrentPrice float64
 }
 
-type EVCCState struct {
-	Result struct {		
-		TariffGrid				float64 `json:"tariffGrid"`
-		Forecast                struct {
-			Grid []struct {
-				Start time.Time `json:"start"`
-				End   time.Time `json:"end"`
-				Price float64   `json:"value"`
-			} `json:"grid"`
-		} `json:"forecast"`
-	}
+type EVCCState struct {	
+	TariffGrid		float64 `json:"tariffGrid"`
+	Forecast        struct {
+		Grid []struct {
+			Start time.Time `json:"start"`
+			End   time.Time `json:"end"`
+			Price float64   `json:"value"`
+		} `json:"grid"`
+	} `json:"forecast"`
 }
 
 //---------------- FUNCTIONS -----------------
@@ -51,17 +53,18 @@ func getEVCCState(url string, start int, end int)(LOWESTPrice){
 	}
 
 	var lowestPrice LOWESTPrice
-	lowestPrice.Price = evccResp.Result.Forecast.Grid[0].Price
-	lowestPrice.CurrentPrice = evccResp.Result.TariffGrid
+	slog.Debug(fmt.Sprintf("%d Price Steps received", len(evccResp.Forecast.Grid)))
+	lowestPrice.Price = evccResp.Forecast.Grid[0].Price
+	lowestPrice.CurrentPrice = evccResp.TariffGrid
 
 	// Lowest Price between START and END
 	for i :=start; i<=end; i++ {
-		if evccResp.Result.Forecast.Grid[i].Price < lowestPrice.Price {
-			lowestPrice.Price = evccResp.Result.Forecast.Grid[i].Price
-			lowestPrice.Start = evccResp.Result.Forecast.Grid[i].Start
-			lowestPrice.End = evccResp.Result.Forecast.Grid[i].End
-		}else if evccResp.Result.Forecast.Grid[i].Price == lowestPrice.Price { 
-			lowestPrice.End = evccResp.Result.Forecast.Grid[i].End
+		if evccResp.Forecast.Grid[i].Price < lowestPrice.Price {
+			lowestPrice.Price = evccResp.Forecast.Grid[i].Price
+			lowestPrice.Start = evccResp.Forecast.Grid[i].Start
+			lowestPrice.End = evccResp.Forecast.Grid[i].End
+		}else if evccResp.Forecast.Grid[i].Price == lowestPrice.Price { 
+			lowestPrice.End = evccResp.Forecast.Grid[i].End
 		}
 	}
 	slog.Info(fmt.Sprintf("Current Price: %.3f Euro/kWh", lowestPrice.CurrentPrice))
@@ -115,6 +118,8 @@ func main() {
 	
 	slog.SetDefault(logger)
 	slog.Debug("Application started")
+	slog.Info("Config Setting","Version",baseVersion+curVersion)
+	slog.Info("Config Setting","Build",curBuild)
 
 	if Interval != 0 {
 		for {
