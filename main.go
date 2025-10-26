@@ -52,10 +52,16 @@ func getEVCCState(url string, start int, end int)(LOWESTPrice){
 		slog.Error("error decoding data", "ERR", err)
 	}
 
+	if viper.GetBool("global.debug") {
+		fmt.Println(evccResp.Forecast.Grid)
+	//slog.Debug(evccResp)
+	}
+
 	var lowestPrice LOWESTPrice
 	slog.Debug(fmt.Sprintf("%d Price Steps received", len(evccResp.Forecast.Grid)))
 	lowestPrice.Price = evccResp.Forecast.Grid[0].Price
 	lowestPrice.CurrentPrice = evccResp.TariffGrid
+
 
 	// Lowest Price between START and END
 	for i :=start; i<=end; i++ {
@@ -65,8 +71,14 @@ func getEVCCState(url string, start int, end int)(LOWESTPrice){
 			lowestPrice.End = evccResp.Forecast.Grid[i].End
 		}else if evccResp.Forecast.Grid[i].Price == lowestPrice.Price { 
 			lowestPrice.End = evccResp.Forecast.Grid[i].End
+			lowestPrice.Start = evccResp.Forecast.Grid[i].Start
 		}
 	}
+
+	if viper.GetBool("global.debug") {
+		fmt.Println(lowestPrice)
+	}
+	//slog.Debug(fmt.Println(lowestPrice))
 	slog.Info(fmt.Sprintf("Current Price: %.3f Euro/kWh", lowestPrice.CurrentPrice))
 	slog.Info(fmt.Sprintf("Lowest Price: %.3f Euro/kWh starting at %d:00 - ending at %d:00", lowestPrice.Price, lowestPrice.Start.Hour(), lowestPrice.End.Hour()))
 
@@ -74,6 +86,7 @@ func getEVCCState(url string, start int, end int)(LOWESTPrice){
 }
 
 func haUpdate(haEntitiy string, haHost string, haToken string, lowestPrice LOWESTPrice) {
+		slog.Debug("Performing Home Assistant Update")
 		client := &http.Client{}
 		payload := []byte(fmt.Sprintf(`{
 			"state": "%d:00 - %d:00"
