@@ -11,7 +11,7 @@ import (
 	"bytes"
 )
 
-const baseVersion = "v0.1."
+const baseVersion = "v0.2."
 var curVersion string
 var curBuild string
 
@@ -121,6 +121,7 @@ func main() {
 
 	var evccHost = viper.GetString("evcc.host")
 	var Interval = viper.GetInt("global.interval")
+	var DaemonMode = viper.GetBool("global.daemon")
 
 	fmt.Println("\n-- Tibber Tarrif Check via EVCC --\n")
 
@@ -134,7 +135,7 @@ func main() {
 	slog.Info("Config Setting","Version",baseVersion+curVersion)
 	slog.Info("Config Setting","Build",curBuild)
 
-	if Interval != 0 {
+	if Interval != 0 && DaemonMode {
 		for {
 			// Refresh Config from File
 			err = viper.ReadInConfig()
@@ -152,6 +153,7 @@ func main() {
 
 			slog.Debug(fmt.Sprintf("Current Time: %s", time.Now()))
 			slog.Debug("Config Setting","Interval", Interval)
+			slog.Debug("Config Setting","DaemonMode", DaemonMode)
 			slog.Debug("Config Setting","EVCC_Host",evccHost)
 			slog.Debug("Config Setting","Morning_Start",evccMorningStart)
 			slog.Debug("Config Setting","Morning_End",evccMorningEnd)
@@ -184,5 +186,35 @@ func main() {
 			time.Sleep(time.Duration(Interval) * time.Second)
 			fmt.Println("")
 		}
+	}else{
+
+		Interval = viper.GetInt("global.interval")
+		evccMorningStart := viper.GetInt("evcc.morning.start")
+		evccMorningEnd := viper.GetInt("evcc.morning.end")
+		evccAfternoonStart := viper.GetInt("evcc.afternoon.start")
+		evccAfternoonEnd := viper.GetInt("evcc.afternoon.end")
+		haHost := viper.GetString("homeassistant.host")
+		haToken := viper.GetString("homeassistant.token")
+		haEntitiy := viper.GetString("homeassistant.text_entityid")
+		slog.Debug(fmt.Sprintf("Current Time: %s", time.Now()))
+		slog.Debug("Config Setting","Interval", Interval)
+		slog.Debug("Config Setting","DaemonMode", DaemonMode)
+		slog.Debug("Config Setting","EVCC_Host",evccHost)
+		slog.Debug("Config Setting","Morning_Start",evccMorningStart)
+		slog.Debug("Config Setting","Morning_End",evccMorningEnd)
+		slog.Debug("Config Setting","Afternoon_Start",evccAfternoonStart)
+		slog.Debug("Config Setting","Afternoon_End",evccAfternoonEnd)
+		slog.Debug("Config Setting","HA Host",haHost)
+		slog.Debug("Config Setting","HA Token",haToken)
+		slog.Debug("Config Setting","HA EntitiyID",haEntitiy)
+
+		var lowestPrice LOWESTPrice
+		slog.Debug("Performing Morning Check based on current time")
+		lowestPrice = getEVCCState(evccHost, evccMorningStart, evccMorningEnd)
+		//slog.Debug("LowestPrice","Dump",lowestPrice)
+
+		jsonData, _ := json.Marshal(lowestPrice)
+		fmt.Println("::"+string(jsonData))
+		
 	}
 }
