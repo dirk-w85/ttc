@@ -52,10 +52,8 @@ func getEVCCState(url string, start int, end int)(LOWESTPrice){
 		slog.Error("error decoding data", "ERR", err)
 	}
 
-	if viper.GetBool("global.debug") {
-		fmt.Println(evccResp.Forecast.Grid)
-	//slog.Debug(evccResp)
-	}
+	jsonData, _ := json.Marshal(evccResp.Forecast.Grid)
+	slog.Debug(string(jsonData))
 
 	var lowestPrice LOWESTPrice
 	slog.Debug(fmt.Sprintf("%d Price Steps received", len(evccResp.Forecast.Grid)))
@@ -75,10 +73,8 @@ func getEVCCState(url string, start int, end int)(LOWESTPrice){
 		}
 	}
 
-	if viper.GetBool("global.debug") {
-		fmt.Println(lowestPrice)
-	}
-	//slog.Debug(fmt.Println(lowestPrice))
+	jsonData, _ = json.Marshal(lowestPrice)
+	slog.Debug(string(jsonData))
 	slog.Info(fmt.Sprintf("Current Price: %.3f Euro/kWh", lowestPrice.CurrentPrice))
 	slog.Info(fmt.Sprintf("Lowest Price: %.3f Euro/kWh starting at %d:00 - ending at %d:00", lowestPrice.Price, lowestPrice.Start.Hour(), lowestPrice.End.Hour()))
 
@@ -187,7 +183,6 @@ func main() {
 			fmt.Println("")
 		}
 	}else{
-
 		Interval = viper.GetInt("global.interval")
 		evccMorningStart := viper.GetInt("evcc.morning.start")
 		evccMorningEnd := viper.GetInt("evcc.morning.end")
@@ -214,7 +209,6 @@ func main() {
 		//slog.Debug("LowestPrice","Dump",lowestPrice)
 
 		jsonData, _ := json.Marshal(lowestPrice)
-		fmt.Println("::"+string(jsonData))
-		
+		fmt.Println("::"+string(jsonData))		
 	}
 }

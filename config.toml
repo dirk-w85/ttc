@@ -2,7 +2,7 @@
 [global]
 debug = true
 interval = 300
-daemon = false
+daemon = true
 
 # EVCC Settings
 [evcc]
